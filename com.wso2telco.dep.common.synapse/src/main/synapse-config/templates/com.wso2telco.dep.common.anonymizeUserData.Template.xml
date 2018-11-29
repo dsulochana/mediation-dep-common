@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<template name="com.wso2telco.dep.common.anonymizeUserData.Template" xmlns="http://ws.apache.org/ns/synapse">
+  <parameter name="anonymize"/>
+  <parameter name="handler"/>
+  <sequence>
+  	<property expression="fn:normalize-space($func:anonymize)" name="anonymize" scope="default" type="STRING"/>
+  	<property expression="fn:normalize-space($func:handler)" name="handler" scope="default" type="STRING"/>
+  	<filter regex="true" source="get-property('USER_ANONYMIZATION')">
+  		<then>
+		  	<switch source="$ctx:handler">
+		        <case regex="AmountChargeHandler">
+                     <class name="org.wso2telco.dep.nashornmediator.NashornMediator">
+			        	<property name="script" value="
+			            var payload= mc.getPayloadJSON();
+			            if(mc.getProperty('anonymize') == 'true'){
+					    	payload.amountTransaction.endUserId = mc.getProperty('MASKED_MSISDN');
+					    } else {
+					    	payload.amountTransaction.endUserId = mc.getProperty('MSISDN');
+					    }     	
+			            mc.setPayloadJSON(payload);
+		        		"/>
+	    			</class>
+		        </case>
+		        <case regex="SendSMSHandler">
+                     <class name="org.wso2telco.dep.nashornmediator.NashornMediator">
+			        	<property name="script" value="
+			            var payload= mc.getPayloadJSON();
+			            var addressList = '';
+			            if(mc.getProperty('anonymize') == 'true'){
+			            	addressList = mc.getProperty('MASKED_MSISDN_LIST');
+					    } else {
+					    	addressList = mc.getProperty('MSISDN_LIST');
+					    }
+					    payload.outboundSMSMessageRequest.address = addressList.split(',');
+			            mc.setPayloadJSON(payload);
+		        		"/>
+	    			</class>
+		        </case>
+		    	<default/>
+		    </switch>
+    	</then>
+		<else/>
+	</filter>
+  </sequence>
+</template>

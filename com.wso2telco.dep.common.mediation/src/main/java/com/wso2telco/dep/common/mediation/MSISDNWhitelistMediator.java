@@ -14,6 +14,7 @@ public class MSISDNWhitelistMediator extends AbstractMediator {
 
 		String msisdn = (String) messageContext.getProperty("paramValue");
 		String paramArray = (String) messageContext.getProperty("paramArray");
+		String maskedMsidsn = (String) messageContext.getProperty("MASKED_MSISDN");
 		String apiName = (String) messageContext.getProperty("API_NAME");
 		String apiVersion = (String) messageContext.getProperty("VERSION");
 		String apiPublisher = (String) messageContext.getProperty("API_PUBLISHER");
@@ -21,6 +22,12 @@ public class MSISDNWhitelistMediator extends AbstractMediator {
 		String regexPattern = (String) messageContext.getProperty("msisdnRegex");
 		String regexGroupNumber = (String) messageContext.getProperty("msisdnRegexGroup");
 
+		
+		String loggingMsisdn = msisdn;
+		if(Boolean.valueOf((String)messageContext.getProperty("USER_ANONYMIZATION")).booleanValue()) {
+			loggingMsisdn = maskedMsidsn;
+		}
+		
 		Pattern pattern = Pattern.compile(regexPattern);
 		Matcher matcher = pattern.matcher(msisdn);
 
@@ -46,7 +53,7 @@ public class MSISDNWhitelistMediator extends AbstractMediator {
 						" Number");
 				messageContext.setProperty("WHITELISTED_MSISDN", "false");
 
-				String errorVariable = msisdn;
+				String errorVariable = loggingMsisdn;
 
 				if(paramArray != null){
 					errorVariable = paramArray;
@@ -64,7 +71,7 @@ public class MSISDNWhitelistMediator extends AbstractMediator {
 			log.error("error in MSISDNWhitelistMediator mediate : "
 					+ e.getMessage());
 
-			String errorVariable = msisdn;
+			String errorVariable = loggingMsisdn;
 
 			if(paramArray != null){
 				errorVariable = paramArray;

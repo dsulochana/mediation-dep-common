@@ -27,4 +27,5 @@
 	<appendTokenHeader>false</appendTokenHeader>
 	<!-- This must be set if above is true -->
 	<tokenHeaderName></tokenHeaderName>
+	<userMaskingSecretKey>changethis</userMaskingSecretKey>
 </mediationConfig>
